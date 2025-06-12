@@ -5,7 +5,7 @@ constexpr short GAME_PORT = 3000;
 constexpr short MAX_CHAT_LENGTH = 255;
 
 constexpr int  MAX_USER = 10000;
-constexpr int  NUM_MONSTER = 200000;
+constexpr int  NUM_MONSTER = 200'000;
 
 constexpr char S2C_P_AVATAR_INFO = 1;
 constexpr char S2C_P_MOVE = 2;
@@ -50,6 +50,7 @@ struct sc_packet_move {
 	char type;
 	long long id;
 	short x, y;
+    size_t move_time;	// milliseconds
 };
 
 struct sc_packet_enter {
@@ -106,6 +107,7 @@ struct cs_packet_move {
 	unsigned char  size;
 	char  type;
 	char  direction;
+	size_t move_time;	// milliseconds
 };
 
 struct cs_packet_attack {

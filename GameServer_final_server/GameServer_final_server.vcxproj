@@ -131,16 +131,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Character.cpp" />
+    <ClCompile Include="DbConnection.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Network.cpp" />
+    <ClCompile Include="NpcAI.cpp" />
+    <ClCompile Include="NpcSession.cpp" />
+    <ClCompile Include="OverlappedEx.h" />
+    <ClCompile Include="PlayerSession.cpp" />
+    <ClCompile Include="Session.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Character.h" />
+    <ClInclude Include="DbConnection.h" />
+    <ClInclude Include="Defines.h" />
     <ClInclude Include="game_header.h" />
     <ClInclude Include="include\lauxlib.h" />
     <ClInclude Include="include\lua.h" />
     <ClInclude Include="include\lua.hpp" />
     <ClInclude Include="include\luaconf.h" />
     <ClInclude Include="include\lualib.h" />
-    <ClInclude Include="NetUtil.h" />
+    <ClInclude Include="Network.h" />
+    <ClInclude Include="NpcAI.h" />
+    <ClInclude Include="NpcSession.h" />
+    <ClInclude Include="PacketParser.h" />
+    <ClInclude Include="PlayerSession.h" />
+    <ClInclude Include="Session.h" />
     <ClInclude Include="Vault.h" />
   </ItemGroup>
   <ItemGroup>
