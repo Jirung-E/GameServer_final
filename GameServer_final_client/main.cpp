@@ -228,8 +228,22 @@ void ProcessPacket(char* ptr)
 			break;
 		}
 		case S2C_P_LOGIN_FAIL: {
-			//sc_packet_login_fail* my_packet = reinterpret_cast<sc_packet_login_fail*>(ptr);
+			sc_packet_login_fail* my_packet = reinterpret_cast<sc_packet_login_fail*>(ptr);
 			wcout << L"Login Fail" << endl;
+			switch(my_packet->reason) {
+				case 0:
+					wcout << L"Unknown error" << endl;
+					break;
+				case 1:
+					wcout << L"이미 접속 중인 아이디입니다." << endl;
+					break;
+				case 2:
+					wcout << L"부적절한 ID (특수문자, 20자 이상)" << endl;
+					break;
+				case 3:
+					wcout << L"서버가 가득 찼습니다." << endl;
+					break;
+			}
 			exit(-1);
 			break;
 		}

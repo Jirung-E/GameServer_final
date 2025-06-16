@@ -74,6 +74,27 @@ void PlayerSession::processPacket(Packet packet) {
 		case C2S_P_LOGIN: {
 			cs_packet_login* p = reinterpret_cast<cs_packet_login*>(&packet);
 
+            for(const auto& [key, session] : Session::sessions) {
+                shared_ptr<Session> client = session.load();
+				// npc이거나 접속을 종료했다면 같은 이름이어도 상관 없음
+				if(client == nullptr || client->isNpc() || client->state == SessionState::Free) {
+					continue;
+				}
+
+				// 같은 이름을 가진 유저가 이미 접속중이면
+                if(strcmp(p->name, client->character.name) == 0) {
+                    cout << "Login failed: " << p->name << " already logged in.\n";
+                    cout << "state: " << static_cast<int>(client->state.load()) << endl;
+                    sc_packet_login_fail lfp { };
+                    lfp.size = sizeof(lfp);
+                    lfp.type = S2C_P_LOGIN_FAIL;
+                    lfp.id = key;
+                    lfp.reason = 1; // 다른 클라이언트에서 사용중
+                    doSend(&lfp);
+                    return;
+                }
+            }
+
 			strcpy_s(character.name, p->name);
 
 			DbRequestParameters req { DbRequest::Load, getId(), { } };

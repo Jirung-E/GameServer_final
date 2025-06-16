@@ -30,6 +30,7 @@ static PlayerSession* newClient(SOCKET socket) {
 	for(auto& cl : Session::sessions) {
 		shared_ptr<Session> p = cl.second;
 		if(p->state == SessionState::Free && p->isPc()) {
+            strcpy_s(p->character.name, ""); // Reset name
 			PlayerSession* client = reinterpret_cast<PlayerSession*>(p.get());
 			client->state = SessionState::Alloc;
 			client->setSocket(socket);
@@ -230,6 +231,7 @@ void Server::worker() {
 				break;
 			}
 			case IoOperation::LoginFail: {
+                // DB에서 로드 실패
 				shared_ptr<Session> session = Session::sessions.at(static_cast<id_t>(key));
 				PlayerSession* client = reinterpret_cast<PlayerSession*>(session.get());
 
@@ -271,7 +273,7 @@ void Server::disconnect(id_t c_id) {
 
 	for(auto& p_id : vl) {
 		shared_ptr<Session> p = Session::sessions.at(p_id);
-		if(p->isNpc() || p == nullptr || SessionState::InGame != p->state || p_id == c_id) continue;
+		if(p == nullptr || p->isNpc() || p->state != SessionState::InGame || p_id == c_id) continue;
 		auto c = reinterpret_cast<PlayerSession*>(p.get());
 		c->sendRemovePlayerPacket(c_id);
 	}
