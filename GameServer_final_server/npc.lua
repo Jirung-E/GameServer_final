@@ -29,6 +29,11 @@ function on_trigger(p_id, time)
 end
 
 
+function attack(p_id)
+
+end
+
+
 -- time: ms
 function ai_update(x, y, near_players, time)
     if(target_id == nil) then

@@ -96,7 +96,7 @@ void Server::initializeNpc() {
 	cout << "NPC initialize begin.\n";
 
 	for(id_t i = MAX_USER; i < MAX_USER + NUM_MONSTER; ++i) {
-		auto [x, y] = map.getRandomValidPosition();
+		auto [x, y] = map.getRandomEmptyPosition();
 
 		shared_ptr<Session> npc = make_shared<NpcSession>(i, x, y);
 		Session::sessions.insert(make_pair(i, npc));
@@ -245,7 +245,7 @@ void Server::worker() {
                 shared_ptr<Session> session = Session::sessions.at(static_cast<id_t>(key));
 				PlayerSession* client = reinterpret_cast<PlayerSession*>(session.get());
 
-                auto [x, y] = map.getRandomValidPosition();
+                auto [x, y] = map.getRandomSpawnPosition();
 				client->character.x = x;
 				client->character.y = y;
 

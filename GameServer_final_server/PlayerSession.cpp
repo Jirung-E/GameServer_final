@@ -26,6 +26,13 @@ void PlayerSession::login() {
 	sendLoginInfoPacket();
 	state = SessionState::InGame;
 
+    // invalid한 위치에 있다면 랜덤한 스폰 위치로 이동
+    if(!Server::map.isValidPosition(character.x, character.y)) {
+        auto [x, y] = Server::map.getRandomSpawnPosition();
+        character.x = x;
+        character.y = y;
+    }
+
 	{
 		int idx_x = character.x / SECTOR_SIZE;
 		int idx_y = character.y / SECTOR_SIZE;
