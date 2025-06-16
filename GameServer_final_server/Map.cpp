@@ -20,8 +20,8 @@ Map::Map(): map { } {
         return;
     }
 
-    for(int i = 0; i < MAP_HEIGHT; ++i) {
-        for(int j = 0; j < MAP_WIDTH; ++j) {
+    for(short i = 0; i < MAP_HEIGHT; ++i) {
+        for(short j = 0; j < MAP_WIDTH; ++j) {
             char c;
             map_file.get(c);
             if(map_file.eof()) {
@@ -35,14 +35,14 @@ Map::Map(): map { } {
 }
 
 
-MapContent Map::get(int x, int y) const {
+MapContent Map::get(short x, short y) const {
     if(0 <= x && x < MAP_WIDTH && 0 <= y && y < MAP_HEIGHT) {
         return map[y][x];
     }
     return MapContent::Invalid; // 유효하지 않은 위치
 }
 
-bool Map::isValidPosition(int x, int y) const {
+bool Map::isValidPosition(short x, short y) const {
     if(0 <= x && x < MAP_WIDTH && 0 <= y && y < MAP_HEIGHT) {
         // 빈칸이거나 시작 위치인 경우
         return map[y][x] == MapContent::Empty || map[y][x] == MapContent::Spawn;
@@ -52,14 +52,14 @@ bool Map::isValidPosition(int x, int y) const {
 }
 
 
-std::vector<std::pair<int, int>> Map::getContentPositions(MapContent content, int x, int y, int range) const {
-    std::vector<std::pair<int, int>> positions;
+std::vector<std::pair<short, short>> Map::getContentPositions(MapContent content, short x, short y, short range) const {
+    std::vector<std::pair<short, short>> positions;
     positions.reserve(static_cast<size_t>((2 * range + 1) * (2 * range + 1)));
 
-    for(int i = -range; i <= range; ++i) {
-        for(int j = -range; j <= range; ++j) {
-            int new_x = x + i;
-            int new_y = y + j;
+    for(short i = -range; i <= range; ++i) {
+        for(short j = -range; j <= range; ++j) {
+            short new_x = x + i;
+            short new_y = y + j;
             if(0 <= new_x && new_x < MAP_WIDTH && 0 <= new_y && new_y < MAP_HEIGHT) {
                 if(map[new_y][new_x] == content) {
                     positions.push_back(std::make_pair(new_x, new_y));
@@ -72,33 +72,33 @@ std::vector<std::pair<int, int>> Map::getContentPositions(MapContent content, in
 }
 
 
-//std::vector<std::pair<int, int>> Map::getValidPositions(int x, int y, int range) const {
-//    std::vector<std::pair<int, int>> valid_positions;
-//    valid_positions.reserve(static_cast<size_t>((2 * range + 1) * (2 * range + 1)));
-//
-//    for(int i = -range; i <= range; ++i) {
-//        for(int j = -range; j <= range; ++j) {
-//            int new_x = x + i;
-//            int new_y = y + j;
-//            if(0 <= new_x && new_x < MAP_WIDTH && 0 <= new_y && new_y < MAP_HEIGHT) {
-//                if(map[new_y][new_x] == MapContent::Empty || map[new_y][new_x] == MapContent::Spawn) {
-//                    valid_positions.push_back(std::make_pair(new_x, new_y));
-//                }
-//            }
-//        }
-//    }
-//
-//    return valid_positions;
-//}
+std::vector<std::pair<short, short>> Map::getValidPositions(short x, short y, short range) const {
+    std::vector<std::pair<short, short>> valid_positions;
+    valid_positions.reserve(static_cast<size_t>((2 * range + 1) * (2 * range + 1)));
 
-std::vector<std::pair<int, int>> Map::getEmptyPositions(int x, int y, int range) const {
-    std::vector<std::pair<int, int>> empty_positions;
+    for(short i = -range; i <= range; ++i) {
+        for(short j = -range; j <= range; ++j) {
+            short new_x = x + i;
+            short new_y = y + j;
+            if(0 <= new_x && new_x < MAP_WIDTH && 0 <= new_y && new_y < MAP_HEIGHT) {
+                if(map[new_y][new_x] == MapContent::Empty || map[new_y][new_x] == MapContent::Spawn) {
+                    valid_positions.push_back(std::make_pair(new_x, new_y));
+                }
+            }
+        }
+    }
+
+    return valid_positions;
+}
+
+std::vector<std::pair<short, short>> Map::getEmptyPositions(short x, short y, short range) const {
+    std::vector<std::pair<short, short>> empty_positions;
     empty_positions.reserve(static_cast<size_t>((2 * range + 1) * (2 * range + 1)));
 
-    for(int i = -range; i <= range; ++i) {
-        for(int j = -range; j <= range; ++j) {
-            int new_x = x + i;
-            int new_y = y + j;
+    for(short i = -range; i <= range; ++i) {
+        for(short j = -range; j <= range; ++j) {
+            short new_x = x + i;
+            short new_y = y + j;
             if(0 <= new_x && new_x < MAP_WIDTH && 0 <= new_y && new_y < MAP_HEIGHT) {
                 if(map[new_y][new_x] == MapContent::Empty) {
                     empty_positions.push_back(std::make_pair(new_x, new_y));
@@ -110,14 +110,14 @@ std::vector<std::pair<int, int>> Map::getEmptyPositions(int x, int y, int range)
     return empty_positions;
 }
 
-std::vector<std::pair<int, int>> Map::getSpawnPositions(int x, int y, int range) const {
-    std::vector<std::pair<int, int>> spawn_positions;
+std::vector<std::pair<short, short>> Map::getSpawnPositions(short x, short y, short range) const {
+    std::vector<std::pair<short, short>> spawn_positions;
     spawn_positions.reserve(static_cast<size_t>((2 * range + 1) * (2 * range + 1)));
 
-    for(int i = -range; i <= range; ++i) {
-        for(int j = -range; j <= range; ++j) {
-            int new_x = x + i;
-            int new_y = y + j;
+    for(short i = -range; i <= range; ++i) {
+        for(short j = -range; j <= range; ++j) {
+            short new_x = x + i;
+            short new_y = y + j;
             if(0 <= new_x && new_x < MAP_WIDTH && 0 <= new_y && new_y < MAP_HEIGHT) {
                 if(map[new_y][new_x] == MapContent::Spawn) {
                     spawn_positions.push_back(std::make_pair(new_x, new_y));
@@ -129,15 +129,15 @@ std::vector<std::pair<int, int>> Map::getSpawnPositions(int x, int y, int range)
     return spawn_positions;
 }
 
-//std::vector<std::pair<int, int>> Map::getValidPositions() const {
+//std::vector<std::pair<short, short>> Map::getValidPositions() const {
 //    static bool initialized = false;
-//    static std::vector<std::pair<int, int>> valid_positions;
+//    static std::vector<std::pair<short, short>> valid_positions;
 //
 //    if(!initialized) {
 //        valid_positions.reserve(MAP_SIZE);
 //
-//        for(int i = 0; i < MAP_HEIGHT; ++i) {
-//            for(int j = 0; j < MAP_WIDTH; ++j) {
+//        for(short i = 0; i < MAP_HEIGHT; ++i) {
+//            for(short j = 0; j < MAP_WIDTH; ++j) {
 //                if(map[i][j] == MapContent::Empty || map[i][j] == MapContent::Spawn) {
 //                    valid_positions.emplace_back(j, i);
 //                }
@@ -151,15 +151,15 @@ std::vector<std::pair<int, int>> Map::getSpawnPositions(int x, int y, int range)
 //    return valid_positions;
 //}
 
-std::vector<std::pair<int, int>> Map::getEmptyPositions() const {
+std::vector<std::pair<short, short>> Map::getEmptyPositions() const {
     static bool initialized = false;
-    static std::vector<std::pair<int, int>> empty_positions;
+    static std::vector<std::pair<short, short>> empty_positions;
 
     if(!initialized) {
         empty_positions.reserve(MAP_SIZE);
 
-        for(int i = 0; i < MAP_HEIGHT; ++i) {
-            for(int j = 0; j < MAP_WIDTH; ++j) {
+        for(short i = 0; i < MAP_HEIGHT; ++i) {
+            for(short j = 0; j < MAP_WIDTH; ++j) {
                 if(map[i][j] == MapContent::Empty) {
                     empty_positions.emplace_back(j, i);
                 }
@@ -173,15 +173,15 @@ std::vector<std::pair<int, int>> Map::getEmptyPositions() const {
     return empty_positions;
 }
 
-std::vector<std::pair<int, int>> Map::getSpawnPositions() const {
+std::vector<std::pair<short, short>> Map::getSpawnPositions() const {
     static bool initialized = false;
-    static std::vector<std::pair<int, int>> spawn_positions;
+    static std::vector<std::pair<short, short>> spawn_positions;
 
     if(!initialized) {
         spawn_positions.reserve(MAP_SIZE);
 
-        for(int i = 0; i < MAP_HEIGHT; ++i) {
-            for(int j = 0; j < MAP_WIDTH; ++j) {
+        for(short i = 0; i < MAP_HEIGHT; ++i) {
+            for(short j = 0; j < MAP_WIDTH; ++j) {
                 if(map[i][j] == MapContent::Spawn) {
                     spawn_positions.emplace_back(j, i);
                 }
@@ -196,7 +196,7 @@ std::vector<std::pair<int, int>> Map::getSpawnPositions() const {
 }
 
 
-//std::pair<int, int> Map::getRandomValidPosition() const {
+//std::pair<short, short> Map::getRandomValidPosition() const {
 //    static auto valid_positions = getValidPositions();
 //    if(valid_positions.empty()) {
 //        return { 0, 0 }; // 기본 위치
@@ -207,7 +207,7 @@ std::vector<std::pair<int, int>> Map::getSpawnPositions() const {
 //    return valid_positions[uid(dre)];
 //}
 
-std::pair<int, int> Map::getRandomEmptyPosition() const {
+std::pair<short, short> Map::getRandomEmptyPosition() const {
     static auto empty_positions = getEmptyPositions();
     if(empty_positions.empty()) {
         return { 0, 0 }; // 기본 위치
@@ -218,7 +218,7 @@ std::pair<int, int> Map::getRandomEmptyPosition() const {
     return empty_positions[uid(dre)];
 }
 
-std::pair<int, int> Map::getRandomSpawnPosition() const {
+std::pair<short, short> Map::getRandomSpawnPosition() const {
     static auto spawn_positions = getSpawnPositions();
     if(spawn_positions.empty()) {
         return { 0, 0 }; // 기본 위치

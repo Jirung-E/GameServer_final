@@ -13,8 +13,6 @@ NpcSession::NpcSession(id_t id, int x, int y):
 	is_active { false }
 {
 	// Initialize
-	//character.x = rand() % MAP_WIDTH;
-	//character.y = rand() % MAP_HEIGHT;
     character.x = x;
     character.y = y;
 
@@ -24,16 +22,21 @@ NpcSession::NpcSession(id_t id, int x, int y):
 	auto lua = luaL_newstate();
 	luaL_openlibs(lua);
 	luaL_loadfile(lua, "npc.lua");
-	lua_pcall(lua, 0, 0, 0);
+	auto ret = lua_pcall(lua, 0, 0, 0);
+    if(ret != LUA_OK) {
+        fprintf(stderr, "Lua error: %s\n", lua_tostring(lua, -1));
+        lua_pop(lua, 1); // pop error message
+    }
 
-	lua_getglobal(lua, "set_uid");
+	lua_getglobal(lua, "setUid");
 	lua_pushnumber(lua, id);
 	lua_pcall(lua, 1, 0, 0);
 
 	lua_register(lua, "API_sendMessage", lua_sendMessage);
 	lua_register(lua, "API_move", lua_move);
-	lua_register(lua, "API_get_x", lua_getX);
-	lua_register(lua, "API_get_y", lua_getY);
+	lua_register(lua, "API_moveTo", lua_moveTo);
+	lua_register(lua, "API_getX", lua_getX);
+	lua_register(lua, "API_getY", lua_getY);
 
 	*this->lua.borrow() = lua;
 }
@@ -92,7 +95,7 @@ void NpcSession::runAI() {
 
 		auto time = duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		lua_getglobal(*lua, "ai_update");
+		lua_getglobal(*lua, "aiUpdate");
 		lua_pushnumber(*lua, character.x);
 		lua_pushnumber(*lua, character.y);
 		lua_newtable(*lua);
@@ -102,7 +105,11 @@ void NpcSession::runAI() {
 			lua_rawseti(*lua, -2, i++);
 		}
 		lua_pushnumber(*lua, static_cast<lua_Number>(time));
-		lua_pcall(*lua, 4, 0, 0);
+		auto ret = lua_pcall(*lua, 4, 0, 0);
+        if(ret != LUA_OK) {
+            fprintf(stderr, "Lua error: %s\n", lua_tostring(*lua, -1));
+            lua_pop(*lua, 1); // pop error message
+        }
 	}
 
 	// 스크립트를 통해 이동했을수 있으니 후처리
@@ -179,7 +186,7 @@ void NpcSession::event_characterMove(id_t character_id) {
 
 	auto time = duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-	lua_getglobal(*lua, "event_player_move");
+	lua_getglobal(*lua, "event_playerMove");
 	lua_pushnumber(*lua, character.x);
 	lua_pushnumber(*lua, character.y);
 	lua_pushnumber(*lua, character_id);

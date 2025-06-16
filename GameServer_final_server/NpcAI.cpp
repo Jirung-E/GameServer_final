@@ -1,10 +1,13 @@
 #include "NpcAI.h"
 
 #include <thread>
+#include <iostream>
 
 #include "OverlappedEx.h"
 #include "Session.h"
 #include "PlayerSession.h"
+#include "Network.h"
+#include "Astar.h"
 
 using namespace std;
 
@@ -53,6 +56,38 @@ int NpcAI::lua_move(lua_State* L) {
 
 		character.x = x;
 		character.y = y;
+	}
+
+	// push return value
+	// ..
+
+	return 0;
+}
+
+int NpcAI::lua_moveTo(lua_State* L) {
+    cout << "lua_moveTo called" << endl;
+	// param load
+	id_t npc_id = (id_t)lua_tointeger(L, -3);
+	short target_x = (short)lua_tointeger(L, -2);
+	short target_y = (short)lua_tointeger(L, -1);
+
+	// pop params
+	lua_pop(L, 4);
+
+	// execute
+	shared_ptr<Session> npc = Session::sessions.at(npc_id);
+	if(npc != nullptr && npc->state == SessionState::InGame) {
+		Character& character = npc->character;
+
+        vector<pair<short, short>> valid_positions = Server::map.getValidPositions(character.x, character.y, VIEW_RANGE);
+        cout << "start follow" << endl;
+		auto next = aStarNextStep(valid_positions, character.x, character.y, target_x, target_y);
+        cout << "next step: " << next.has_value() << endl;
+		if(next.has_value()) {
+			auto [next_x, next_y] = next.value();
+            character.x = next_x;
+            character.y = next_y;
+		}
 	}
 
 	// push return value

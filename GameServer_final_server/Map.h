@@ -26,19 +26,19 @@ public:
     Map();
 
 public:
-    MapContent get(int x, int y) const;
-    bool isValidPosition(int x, int y) const;
+    MapContent get(short x, short y) const;
+    bool isValidPosition(short x, short y) const;
 
-    std::vector<std::pair<int, int>> getContentPositions(MapContent content, int x, int y, int range) const;
-    //std::vector<std::pair<int, int>> getValidPositions(int x, int y, int range) const;
-    std::vector<std::pair<int, int>> getEmptyPositions(int x, int y, int range) const;
-    std::vector<std::pair<int, int>> getSpawnPositions(int x, int y, int range) const;
+    std::vector<std::pair<short, short>> getContentPositions(MapContent content, short x, short y, short range) const;
+    std::vector<std::pair<short, short>> getValidPositions(short x, short y, short range) const;
+    std::vector<std::pair<short, short>> getEmptyPositions(short x, short y, short range) const;
+    std::vector<std::pair<short, short>> getSpawnPositions(short x, short y, short range) const;
 
-    //std::vector<std::pair<int, int>> getValidPositions() const;
-    std::vector<std::pair<int, int>> getEmptyPositions() const;
-    std::vector<std::pair<int, int>> getSpawnPositions() const;
+    //std::vector<std::pair<short, short>> getValidPositions() const;
+    std::vector<std::pair<short, short>> getEmptyPositions() const;
+    std::vector<std::pair<short, short>> getSpawnPositions() const;
 
-    //std::pair<int, int> getRandomValidPosition() const;
-    std::pair<int, int> getRandomEmptyPosition() const;
-    std::pair<int, int> getRandomSpawnPosition() const;
+    //std::pair<short, short> getRandomValidPosition() const;
+    std::pair<short, short> getRandomEmptyPosition() const;
+    std::pair<short, short> getRandomSpawnPosition() const;
 };
