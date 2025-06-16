@@ -21,9 +21,10 @@ enum DbRequest {
 struct DbRequestParameters {
 	DbRequest request_type;
 	id_t obj_id;
-	char name[MAX_ID_LENGTH];
-	short x;
-	short y;
+
+	// obj_id를 통해 가져오면 이미 로그아웃해서 다른 값으로 대체되어있을 가능성이 있으므로 복사해서 전달
+	// name은 *가 아니므로 값이 복사될것임
+    Character data;
 };
 
 
@@ -34,8 +35,8 @@ private:
 	SQLHSTMT hstmt = 0;
 	SQLRETURN retcode;
 	SQLWCHAR user_name[50];
-	SQLINTEGER user_id, user_level, user_x, user_y;
-	SQLLEN cb_user_name = 0, cb_user_id = 0, cb_user_level = 0, cb_x = 0, cb_y = 0;
+	SQLINTEGER level, exp, hp, x, y;
+	SQLLEN cb_user_name = 0, cb_level = 0, cb_exp = 0, cb_hp = 0, cb_x = 0, cb_y = 0;
 
 	concurrency::concurrent_queue<DbRequestParameters> request_queue;
 
@@ -48,8 +49,9 @@ public:
 	void request(DbRequestParameters request);
 
 private:
-	bool load(char name[MAX_ID_LENGTH], Character* data);
-	bool store(char name[MAX_ID_LENGTH], short x, short y);
+	bool load(Character* data);
+	bool add(Character* data);
+	bool store(const Character* data);
 	void loop();
 
 	void showError() {

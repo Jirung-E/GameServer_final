@@ -145,8 +145,8 @@ void ProcessPacket(int ci, unsigned char packet[])
 				}
 			}
 		}
+		break;
 	}
-					   break;
 	case S2C_P_ENTER: break;
 	case S2C_P_LEAVE: break;
 	case S2C_P_CHAT: break;
@@ -165,8 +165,9 @@ void ProcessPacket(int ci, unsigned char packet[])
 		//t_packet.size = sizeof(t_packet);
 		//t_packet.type = CS_TELEPORT;
 		//SendPacket(my_id, &t_packet);
+		
+		break;
 	}
-	break;
 	default: MessageBox(hWnd, L"Unknown Packet Type", L"ERROR", 0);
 		while (true);
 	}

@@ -155,8 +155,8 @@ int DrawGLScene(GLvoid)									// Here's Where We Do All The Drawing
 		float x, y, z;
 
 		x = points[i * 2] / (MAP_WIDTH/2) - 1.25f;
-		y = 1.25f - points[i * 2 + 1] / (MAP_HEIGHT/2);
-		z = -1.0f;
+		y = 1 - points[i * 2 + 1] / (MAP_HEIGHT/2) + 0.4f;
+		z = -1.6f;
 		glVertex3f(x, y, z);
 	}
 	glEnd();

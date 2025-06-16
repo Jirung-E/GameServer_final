@@ -10,6 +10,9 @@
 
 class Character {
 public:
+	unsigned short level;
+	unsigned int exp;
+    short hp;
 	short x;
 	short y;
 

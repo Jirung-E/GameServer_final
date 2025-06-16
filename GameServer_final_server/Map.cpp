@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <random>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ Map::Map(): map { } {
             int row = (i * 8 + j) / MAP_WIDTH;
             int col = (i * 8 + j) % MAP_WIDTH;
             if(row < MAP_HEIGHT && col < MAP_WIDTH) {
-                *(char*)&(map[row][col]) = c;
+                //*(char*)&(map[row][col]) = c;
                 map[row][col] = (c & (1 << (7 - j))) != 0;
             }
         }
@@ -59,16 +60,37 @@ std::vector<std::pair<int, int>> Map::getValidPositions(int x, int y, int range)
 }
 
 std::vector<std::pair<int, int>> Map::getValidPositions() const {
-    std::vector<std::pair<int, int>> valid_positions;
-    valid_positions.reserve(MAP_SIZE);
+    static bool initialized = false;
+    static std::vector<std::pair<int, int>> valid_positions;
 
-    for(int i = 0; i < MAP_HEIGHT; ++i) {
-        for(int j = 0; j < MAP_WIDTH; ++j) {
-            if(map[i][j]) {
-                valid_positions.emplace_back(j, i);
+    if(!initialized) {
+        valid_positions.reserve(MAP_SIZE);
+
+        for(int i = 0; i < MAP_HEIGHT; ++i) {
+            for(int j = 0; j < MAP_WIDTH; ++j) {
+                if(map[i][j]) {
+                    valid_positions.emplace_back(j, i);
+                }
             }
         }
+
+        std::atomic_thread_fence(std::memory_order_seq_cst);
+        initialized = true;
     }
 
     return valid_positions;
+}
+
+
+std::pair<int, int> Map::getRandomValidPosition() const {
+    static auto valid_positions = getValidPositions();
+    if(valid_positions.empty()) {
+        return { 0, 0 }; // 기본 위치
+    }
+
+    static uniform_int_distribution<size_t> uid { 0, valid_positions.size() - 1 };
+    static random_device random_device;
+    static default_random_engine dre { random_device() };
+
+    return valid_positions[uid(dre)];
 }

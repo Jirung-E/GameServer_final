@@ -6,6 +6,9 @@ using namespace std;
 
 
 Character::Character():
+    level { 1 },
+    exp { 0 },
+    hp { 10 },
 	x { 0 },
 	y { 0 },
 	name { },

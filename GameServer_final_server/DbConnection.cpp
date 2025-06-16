@@ -38,11 +38,12 @@ void DbConnection::run() {
 					retcode = SQLAllocHandle(SQL_HANDLE_STMT, hdbc, &hstmt);
 
 					// 반환받을 데이터 지정(일단 전부 받음)
-					retcode = SQLBindCol(hstmt, 1, SQL_C_LONG, &user_id, 100, &cb_user_id);
-					retcode = SQLBindCol(hstmt, 2, SQL_C_WCHAR, user_name, MAX_ID_LENGTH, &cb_user_name);
-					retcode = SQLBindCol(hstmt, 3, SQL_C_LONG, &user_level, 100, &cb_user_level);
-					retcode = SQLBindCol(hstmt, 4, SQL_C_LONG, &user_x, 100, &cb_x);
-					retcode = SQLBindCol(hstmt, 5, SQL_C_LONG, &user_y, 100, &cb_y);
+					//retcode = SQLBindCol(hstmt, 1, SQL_C_WCHAR, user_name, MAX_ID_LENGTH, &cb_user_name);	// 이름을 불러올 필요는 없음
+					retcode = SQLBindCol(hstmt, 1, SQL_C_LONG, &level, 100, &cb_level);
+					retcode = SQLBindCol(hstmt, 2, SQL_C_LONG, &exp, 100, &cb_exp);
+					retcode = SQLBindCol(hstmt, 3, SQL_C_LONG, &hp, 100, &cb_hp);
+					retcode = SQLBindCol(hstmt, 4, SQL_C_LONG, &x, 100, &cb_x);
+					retcode = SQLBindCol(hstmt, 5, SQL_C_LONG, &y, 100, &cb_y);
 
 					loop();
 
@@ -67,11 +68,11 @@ void DbConnection::request(DbRequestParameters request) {
 }
 
 
-bool DbConnection::load(char name[MAX_ID_LENGTH], Character* data) {
+bool DbConnection::load(Character* data) {
 	bool success = false;
 
-	size_t name_len = strlen(name);
-	std::wstring name_wstr { name, name + name_len };
+	size_t name_len = strlen(data->name);
+	std::wstring name_wstr { data->name, data->name + name_len };
 
 	wstring query = std::format(L"EXEC load_data \'{:{}}\'",
 		name_wstr, static_cast<int>(MAX_ID_LENGTH));
@@ -83,9 +84,12 @@ bool DbConnection::load(char name[MAX_ID_LENGTH], Character* data) {
 			//show_error();
 		}
 		if(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
-			data->x = user_x;
-			data->y = user_y;
-			strcpy_s(data->name, MAX_ID_LENGTH, name);
+            data->level = level;
+            data->exp = exp;
+            data->hp = hp;
+			data->x = x;
+			data->y = y;
+			//strcpy_s(data->name, name);	// 이름은 이미 들어가있음
 			success = true;
 		}
 	}
@@ -98,12 +102,31 @@ bool DbConnection::load(char name[MAX_ID_LENGTH], Character* data) {
 	return success;
 }
 
-bool DbConnection::store(char name[MAX_ID_LENGTH], short x, short y) {
-	size_t name_len = strlen(name);
-	std::wstring name_wstr { name, name + name_len };
+bool DbConnection::add(Character* data) {
+	size_t name_len = strlen(data->name);
+	std::wstring name_wstr { data->name, data->name + name_len };
 
-	wstring query = format(L"EXEC store_data \'{:{}}\', {}, {}",
-		name_wstr, static_cast<int>(MAX_ID_LENGTH), x, y);
+	wstring query = format(L"EXEC add_data \'{:{}}\', {}, {}, {}, {}, {}",
+		name_wstr, static_cast<int>(MAX_ID_LENGTH),
+        data->level, data->exp, data->hp, data->x, data->y);
+
+	retcode = SQLExecDirect(hstmt, query.data(), SQL_NTS);
+	if(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
+		return true;
+	}
+	else {
+		HandleDiagnosticRecord(hstmt, SQL_HANDLE_STMT, retcode);
+		return false;
+	}
+}
+
+bool DbConnection::store(const Character* data) {
+	size_t name_len = strlen(data->name);
+	std::wstring name_wstr { data->name, data->name + name_len };
+
+	wstring query = format(L"EXEC store_data \'{:{}}\', {}, {}, {}, {}, {}",
+		name_wstr, static_cast<int>(MAX_ID_LENGTH), 
+		data->level, data->exp, data->hp, data->x, data->y);
 
 	retcode = SQLExecDirect(hstmt, query.data(), SQL_NTS);
 	if(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
@@ -122,11 +145,18 @@ void DbConnection::loop() {
 			switch(request.request_type) {
 				case DbRequest::Load: {
 					shared_ptr<Session> client = Session::sessions.at(request.obj_id);
-					bool success = load(request.name, &client->character);
+					bool success = load(&client->character);
 
 					IoOperation op = IoOperation::LoginFail;
 					if(success) {
 						op = IoOperation::LoginOk;
+					}
+					else {
+						// 회원가입(DB에 추가)
+                        success = add(&client->character);
+						if(success) {
+							op = IoOperation::NewPlayer;
+						}
 					}
 					OverlappedEx* overlapped = new OverlappedEx { op };
 					PostQueuedCompletionStatus(Server::h_iocp, NULL, request.obj_id, &overlapped->overlapped);
@@ -134,7 +164,7 @@ void DbConnection::loop() {
 					break;
 				}
 				case DbRequest::Store: {
-					bool success = store(request.name, request.x, request.y);
+					bool success = store(&request.data);
 					break;
 				}
 			}

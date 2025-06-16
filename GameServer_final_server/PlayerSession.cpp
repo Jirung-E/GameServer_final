@@ -74,6 +74,30 @@ void PlayerSession::processPacket(Packet packet) {
 		case C2S_P_LOGIN: {
 			cs_packet_login* p = reinterpret_cast<cs_packet_login*>(&packet);
 
+            // 이름 길이 검사
+            if(strlen(p->name) == 0 || strlen(p->name) >= MAX_ID_LENGTH) {
+                sc_packet_login_fail lfp { };
+                lfp.size = sizeof(lfp);
+                lfp.type = S2C_P_LOGIN_FAIL;
+                lfp.id = getId();
+                lfp.reason = 2; // 부적절한 ID
+                doSend(&lfp);
+                return;
+            }
+            // 이름에 특수문자가 포함되어 있는지 검사
+            for(size_t i = 0; i < strlen(p->name); ++i) {
+                // 알파벳, 숫자, 언더바(_)만 허용
+                if(!isalnum(p->name[i]) && p->name[i] != '_') {
+                    sc_packet_login_fail lfp { };
+                    lfp.size = sizeof(lfp);
+                    lfp.type = S2C_P_LOGIN_FAIL;
+                    lfp.id = getId();
+                    lfp.reason = 2; // 부적절한 ID
+                    doSend(&lfp);
+                    return;
+                }
+            }
+
             for(const auto& [key, session] : Session::sessions) {
                 shared_ptr<Session> client = session.load();
 				// npc이거나 접속을 종료했다면 같은 이름이어도 상관 없음
@@ -83,8 +107,6 @@ void PlayerSession::processPacket(Packet packet) {
 
 				// 같은 이름을 가진 유저가 이미 접속중이면
                 if(strcmp(p->name, client->character.name) == 0) {
-                    cout << "Login failed: " << p->name << " already logged in.\n";
-                    cout << "state: " << static_cast<int>(client->state.load()) << endl;
                     sc_packet_login_fail lfp { };
                     lfp.size = sizeof(lfp);
                     lfp.type = S2C_P_LOGIN_FAIL;
@@ -97,8 +119,7 @@ void PlayerSession::processPacket(Packet packet) {
 
 			strcpy_s(character.name, p->name);
 
-			DbRequestParameters req { DbRequest::Load, getId(), { } };
-			strcpy_s(req.name, p->name);
+			DbRequestParameters req { DbRequest::Load, getId(), character };
 			Server::db_connection.request(req);
 
 			break;
@@ -247,11 +268,15 @@ void PlayerSession::doSend(void* packet) const {
 
 void PlayerSession::sendLoginInfoPacket() const {
 	sc_packet_avatar_info p { };
-	p.id = getId();
 	p.size = sizeof(p);
 	p.type = S2C_P_AVATAR_INFO;
+	p.id = getId();
 	p.x = character.x;
 	p.y = character.y;
+    p.max_hp = character.hp;	// TODO: MAX HP가 필요함(level로 계산)
+    p.hp = character.hp;
+    p.level = character.level;
+    p.exp = character.exp;
 	doSend(&p);
 }
 

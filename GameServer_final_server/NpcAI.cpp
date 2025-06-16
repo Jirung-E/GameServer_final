@@ -40,7 +40,6 @@ int NpcAI::lua_move(lua_State* L) {
 	lua_pop(L, 4);
 
 	// execute
-	//do_npc_random_move(npc_id);
 	shared_ptr<Session> npc = Session::sessions.at(npc_id);
 	if(npc != nullptr && npc->state == SessionState::InGame) {
 		Character& character = npc->character;

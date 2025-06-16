@@ -11,6 +11,7 @@ enum class IoOperation {
 	Send,
 	LoginOk,
 	LoginFail,
+    NewPlayer,
 	NpcMove,
 	NpcAI
 };

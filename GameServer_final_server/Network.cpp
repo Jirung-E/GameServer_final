@@ -30,7 +30,7 @@ static PlayerSession* newClient(SOCKET socket) {
 	for(auto& cl : Session::sessions) {
 		shared_ptr<Session> p = cl.second;
 		if(p->state == SessionState::Free && p->isPc()) {
-            strcpy_s(p->character.name, ""); // Reset name
+            strcpy_s(p->character.name, "");
 			PlayerSession* client = reinterpret_cast<PlayerSession*>(p.get());
 			client->state = SessionState::Alloc;
 			client->setSocket(socket);
@@ -94,14 +94,9 @@ bool Server::startListen() {
 
 void Server::initializeNpc() {
 	cout << "NPC initialize begin.\n";
-    
-	vector<pair<int, int>> valid_positions = map.getValidPositions();
-	uniform_int_distribution<size_t> uid { 0, valid_positions.size() - 1 };
-    random_device random_device;
-    default_random_engine dre { random_device() };
 
 	for(id_t i = MAX_USER; i < MAX_USER + NUM_MONSTER; ++i) {
-        auto [x, y] = valid_positions[uid(dre)];
+		auto [x, y] = map.getRandomValidPosition();
 
 		shared_ptr<Session> npc = make_shared<NpcSession>(i, x, y);
 		Session::sessions.insert(make_pair(i, npc));
@@ -245,6 +240,21 @@ void Server::worker() {
 
 				break;
 			}
+			case IoOperation::NewPlayer: {
+                // DB에 새로 추가됨
+                shared_ptr<Session> session = Session::sessions.at(static_cast<id_t>(key));
+				PlayerSession* client = reinterpret_cast<PlayerSession*>(session.get());
+
+                auto [x, y] = map.getRandomValidPosition();
+				client->character.x = x;
+				client->character.y = y;
+
+				client->login();
+
+                delete ex_over;
+
+				break;
+			}
 			case IoOperation::NpcMove: {
 				shared_ptr<Session> session = Session::sessions.at(static_cast<id_t>(key));
 				NpcSession* npc = reinterpret_cast<NpcSession*>(session.get());
@@ -284,8 +294,7 @@ void Server::disconnect(id_t c_id) {
 		Session::sectors[idx_y][idx_x].borrow()->erase(client.get());
 	}
 
-	DbRequestParameters db_req { DbRequest::Store, c_id, { }, client->character.x, client->character.y };
-	strcpy_s(db_req.name, client->character.name);
+	DbRequestParameters db_req { DbRequest::Store, c_id, client->character };
 	db_connection.request(db_req);
 
 	closesocket(pc->getSocket());

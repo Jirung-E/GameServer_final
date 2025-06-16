@@ -19,4 +19,6 @@ public:
 
     std::vector<std::pair<int, int>> getValidPositions(int x, int y, int range) const;
     std::vector<std::pair<int, int>> getValidPositions() const;
+
+    std::pair<int, int> getRandomValidPosition() const;
 };
