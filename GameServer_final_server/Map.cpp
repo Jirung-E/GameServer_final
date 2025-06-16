@@ -6,27 +6,22 @@
 using namespace std;
 
 
-Map::Map() {
+static const size_t MAP_SIZE = MAP_HEIGHT * MAP_WIDTH;
+
+
+Map::Map(): map { } {
     ifstream map_file { "../map2.map", ios::binary };
     if(!map_file) {
-        for(int i = 0; i < MAP_HEIGHT; ++i) {
-            for(int j = 0; j < MAP_WIDTH; ++j) {
-                map[i][j] = true;
-            }
-        }
         cout << "Map load failed" << endl;
         return;
     }
 
-    const size_t size = MAP_HEIGHT * MAP_WIDTH / 8;
-    array<char, size> map_data;
-    map_file.read(map_data.data(), size);
-
-    for(int i=0; i<size; ++i) {
-        char c = map_data[i];
+    for(int i=0; i<MAP_SIZE / 8; ++i) {
+        char c;
+        map_file >> c;
         for(int j = 0; j < 8; ++j) {
-            size_t row = (i * 8 + j) / MAP_WIDTH;
-            size_t col = (i * 8 + j) % MAP_WIDTH;
+            int row = (i * 8 + j) / MAP_WIDTH;
+            int col = (i * 8 + j) % MAP_WIDTH;
             if(row < MAP_HEIGHT && col < MAP_WIDTH) {
                 *(char*)&(map[row][col]) = c;
                 map[row][col] = (c & (1 << (7 - j))) != 0;
@@ -46,7 +41,7 @@ bool Map::isValidPosition(int x, int y) const {
 
 std::vector<std::pair<int, int>> Map::getValidPositions(int x, int y, int range) const {
     std::vector<std::pair<int, int>> valid_positions;
-    valid_positions.reserve((2 * range + 1) * (2 * range + 1));
+    valid_positions.reserve(static_cast<size_t>((2 * range + 1) * (2 * range + 1)));
 
     for(int i = -range; i <= range; ++i) {
         for(int j = -range; j <= range; ++j) {
@@ -65,7 +60,7 @@ std::vector<std::pair<int, int>> Map::getValidPositions(int x, int y, int range)
 
 std::vector<std::pair<int, int>> Map::getValidPositions() const {
     std::vector<std::pair<int, int>> valid_positions;
-    valid_positions.reserve(MAP_HEIGHT * MAP_WIDTH);
+    valid_positions.reserve(MAP_SIZE);
 
     for(int i = 0; i < MAP_HEIGHT; ++i) {
         for(int j = 0; j < MAP_WIDTH; ++j) {

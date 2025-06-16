@@ -8,6 +8,10 @@
 using namespace std;
 
 #include "../GameServer_final_server/game_header.h"
+#include "../GameServer_final_server/Map.h"
+#include "../GameServer_final_server/Map.cpp"
+
+Map map { };
 
 sf::TcpSocket s_socket;
 
@@ -108,22 +112,27 @@ unordered_map <int, OBJECT> players;
 
 OBJECT white_tile;
 OBJECT black_tile;
+OBJECT obstacle_tile;
 
 sf::Texture* board;
+sf::Texture* obstacle_texture;
 sf::Texture* pieces;
 
 void client_initialize()
 {
 	board = new sf::Texture;
 	pieces = new sf::Texture;
+    obstacle_texture = new sf::Texture;
 	board->loadFromFile("chessmap.bmp");
 	pieces->loadFromFile("chess2.png");
+    obstacle_texture->loadFromFile("stone.png");
 	if(false == g_font.loadFromFile("cour.ttf")) {
 		cout << "Font Loading Error!\n";
 		exit(-1);
 	}
 	white_tile = OBJECT { *board, 5, 5, TILE_WIDTH, TILE_WIDTH };
 	black_tile = OBJECT { *board, 69, 5, TILE_WIDTH, TILE_WIDTH };
+    obstacle_tile = OBJECT { *obstacle_texture, 0, 0, TILE_WIDTH, TILE_WIDTH };
 	avatar = OBJECT { *pieces, 128, 0, 64, 64 };
 	avatar.move(4, 4);
 }
@@ -276,6 +285,11 @@ void client_main()
 			int tile_x = i + g_left_x;
 			int tile_y = j + g_top_y;
 			if((tile_x < 0) || (tile_y < 0)) continue;
+            if(!::map.isValidPosition(tile_x, tile_y)) {
+                obstacle_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
+                obstacle_tile.a_draw();
+                continue;
+            }
 			if(0 ==(tile_x /3 + tile_y /3) % 2) {
 				white_tile.a_move(TILE_WIDTH * i, TILE_WIDTH * j);
 				white_tile.a_draw();
