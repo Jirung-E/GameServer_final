@@ -7,14 +7,17 @@ using namespace std;
 using namespace NpcAI;
 
 
-NpcSession::NpcSession(id_t id):
+NpcSession::NpcSession(id_t id, int x, int y):
 	Session { id },
 	lua { nullptr },
 	is_active { false }
 {
 	// Initialize
-	character.x = rand() % MAP_WIDTH;
-	character.y = rand() % MAP_HEIGHT;
+	//character.x = rand() % MAP_WIDTH;
+	//character.y = rand() % MAP_HEIGHT;
+    character.x = x;
+    character.y = y;
+
 	sprintf_s(character.name, "NPC%d", id);
 
 	// Script 

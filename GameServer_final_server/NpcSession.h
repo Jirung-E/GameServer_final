@@ -10,7 +10,7 @@ class NpcSession: public Session {
 	std::atomic_bool is_active;
 
 public:
-	NpcSession(id_t id);
+	NpcSession(id_t id, int x, int y);
 	~NpcSession();
 
 public:

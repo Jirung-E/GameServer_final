@@ -105,6 +105,13 @@ void PlayerSession::processPacket(Packet packet) {
 					if(x < MAP_WIDTH - 1) x++;
 					break;
 			}
+
+            if(!Server::map.isValidPosition(x, y)) {
+                // 이동 불가능한 위치
+                // move_packet을 보내야 성능측정이 정상적으로 될거 같음
+				break;
+            }
+
 			character.x = x;
 			character.y = y;
 

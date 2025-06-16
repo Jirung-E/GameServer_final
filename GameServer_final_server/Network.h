@@ -6,6 +6,7 @@
 #include <vector>
 #include <thread>
 
+#include "Map.h"
 #include "OverlappedEx.h"
 #include "DbConnection.h"
 
@@ -29,6 +30,7 @@ public:
 
 class Server {
 public:
+    static Map map;
     static DbConnection db_connection;
     static HANDLE h_iocp;
 
@@ -38,6 +40,7 @@ private:
 public:
     bool bindSocket();
     bool startListen();
+    void initializeNpc();
     bool startAccept();
     void run();
 

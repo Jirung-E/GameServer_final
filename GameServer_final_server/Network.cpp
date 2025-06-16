@@ -1,6 +1,7 @@
 #include "Network.h"
 
 #include <iostream>
+#include <random>
 
 #include "game_header.h"
 #include "Session.h"
@@ -46,8 +47,9 @@ static PlayerSession* newClient(SOCKET socket) {
 }
 
 
-DbConnection Server::db_connection;
+Map Server::map { };
 HANDLE Server::h_iocp = nullptr;
+DbConnection Server::db_connection;
 
 
 bool Server::bindSocket() {
@@ -86,6 +88,31 @@ bool Server::startListen() {
 	}
 
 	return true;
+}
+
+
+void Server::initializeNpc() {
+	cout << "NPC initialize begin.\n";
+    
+	vector<pair<int, int>> valid_positions = map.getValidPositions();
+	uniform_int_distribution<size_t> uid { 0, valid_positions.size() - 1 };
+    random_device random_device;
+    default_random_engine dre { random_device() };
+
+	for(id_t i = MAX_USER; i < MAX_USER + NUM_MONSTER; ++i) {
+        auto [x, y] = valid_positions[uid(dre)];
+
+		shared_ptr<Session> npc = make_shared<NpcSession>(i, x, y);
+		Session::sessions.insert(make_pair(i, npc));
+		npc->state = SessionState::InGame;
+
+		// Sector
+		int idx_x = npc->character.x / SECTOR_SIZE;
+		int idx_y = npc->character.y / SECTOR_SIZE;
+		Session::sectors[idx_y][idx_x].borrow()->insert(npc.get());
+	}
+
+	cout << "NPC initialize end.\n";
 }
 
 
