@@ -103,7 +103,7 @@ public:
 		m_chat.setString(str);
 		m_chat.setFillColor(sf::Color(255, 255, 255));
 		m_chat.setStyle(sf::Text::Bold);
-		m_mess_end_time = chrono::system_clock::now() + chrono::seconds(3);
+		m_mess_end_time = chrono::system_clock::now() + chrono::seconds(1);
 	}
 };
 
