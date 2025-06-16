@@ -32,11 +32,11 @@ class DbConnection {
 private:
 	SQLHENV henv;
 	SQLHDBC hdbc;
-	SQLHSTMT hstmt = 0;
+	SQLHSTMT hstmt;
 	SQLRETURN retcode;
 	SQLWCHAR user_name[50];
 	SQLINTEGER level, exp, hp, x, y;
-	SQLLEN cb_user_name = 0, cb_level = 0, cb_exp = 0, cb_hp = 0, cb_x = 0, cb_y = 0;
+	SQLLEN cb_user_name, cb_level, cb_exp, cb_hp, cb_x, cb_y;
 
 	concurrency::concurrent_queue<DbRequestParameters> request_queue;
 

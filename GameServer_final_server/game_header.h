@@ -5,7 +5,7 @@ constexpr short GAME_PORT = 3000;
 constexpr short MAX_CHAT_LENGTH = 255;
 
 constexpr int  MAX_USER = 10000;
-constexpr int  NUM_MONSTER = 2'000;
+constexpr int  NUM_MONSTER = 200'000;
 
 constexpr char S2C_P_AVATAR_INFO = 1;
 constexpr char S2C_P_MOVE = 2;

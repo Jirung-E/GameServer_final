@@ -9,7 +9,15 @@
 using namespace std;
 
 
-DbConnection::DbConnection() {
+DbConnection::DbConnection():
+    henv { NULL },
+    hdbc { NULL },
+    hstmt { NULL },
+    retcode { SQL_SUCCESS },
+    user_name { L"" },
+    level { 0 }, exp { 0 }, hp { 0 }, x { 0 }, y { 0 },
+    cb_user_name { 0 }, cb_level { 0 }, cb_exp { 0 }, cb_hp { 0 }, cb_x { 0 }, cb_y { 0 }
+{
 
 }
 
@@ -84,11 +92,11 @@ bool DbConnection::load(Character* data) {
 			//show_error();
 		}
 		if(retcode == SQL_SUCCESS || retcode == SQL_SUCCESS_WITH_INFO) {
-            data->level = level;
-            data->exp = exp;
-            data->hp = hp;
-			data->x = x;
-			data->y = y;
+            data->level = static_cast<unsigned short>(level);
+            data->exp = static_cast<unsigned int>(exp);
+            data->hp = static_cast<short>(hp);
+			data->x = static_cast<short>(x);
+			data->y = static_cast<short>(y);
 			//strcpy_s(data->name, name);	// 이름은 이미 들어가있음
 			success = true;
 		}

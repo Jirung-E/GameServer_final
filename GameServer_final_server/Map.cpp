@@ -24,7 +24,6 @@ Map::Map(): map { } {
             int row = (i * 8 + j) / MAP_WIDTH;
             int col = (i * 8 + j) % MAP_WIDTH;
             if(row < MAP_HEIGHT && col < MAP_WIDTH) {
-                //*(char*)&(map[row][col]) = c;
                 map[row][col] = (c & (1 << (7 - j))) != 0;
             }
         }

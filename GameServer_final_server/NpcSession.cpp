@@ -101,7 +101,7 @@ void NpcSession::runAI() {
 			lua_pushnumber(*lua, p_id);
 			lua_rawseti(*lua, -2, i++);
 		}
-		lua_pushnumber(*lua, time);
+		lua_pushnumber(*lua, static_cast<lua_Number>(time));
 		lua_pcall(*lua, 4, 0, 0);
 	}
 
@@ -183,6 +183,6 @@ void NpcSession::event_characterMove(id_t character_id) {
 	lua_pushnumber(*lua, character.x);
 	lua_pushnumber(*lua, character.y);
 	lua_pushnumber(*lua, character_id);
-	lua_pushnumber(*lua, time);
+	lua_pushnumber(*lua, static_cast<lua_Number>(time));
 	lua_pcall(*lua, 4, 0, 0);
 }

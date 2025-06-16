@@ -128,7 +128,7 @@ void Server::run() {
 	vector<thread> worker_threads;
 	worker_threads.reserve(num_threads);
 
-	for(int i=0; i<num_threads-2; ++i) {
+	for(unsigned int i=0; i<num_threads-2; ++i) {
 		worker_threads.emplace_back([this]() { this->worker(); });
 	}
 
