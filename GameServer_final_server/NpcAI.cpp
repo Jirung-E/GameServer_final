@@ -54,8 +54,10 @@ int NpcAI::lua_move(lua_State* L) {
 		if(y < 0) y = 0;
 		if(y >= MAP_HEIGHT) y = MAP_HEIGHT - 1;
 
-		character.x = x;
-		character.y = y;
+        if(Server::map.isValidPosition(x, y)) {
+			character.x = x;
+			character.y = y;
+        }
 	}
 
 	// push return value
@@ -77,10 +79,8 @@ int NpcAI::lua_moveTo(lua_State* L) {
 	shared_ptr<Session> npc = Session::sessions.at(npc_id);
 	if(npc != nullptr && npc->state == SessionState::InGame) {
 		Character& character = npc->character;
-
-        vector<pair<short, short>> valid_positions = Server::map.getValidPositions(character.x, character.y, VIEW_RANGE);
         
-		auto next = aStarNextStep(valid_positions, character.x, character.y, target_x, target_y);
+		auto next = aStarNextStep(character.x, character.y, target_x, target_y);
 		if(next.has_value()) {
 			auto [next_x, next_y] = next.value();
             character.x = next_x;

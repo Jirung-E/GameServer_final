@@ -60,7 +60,6 @@ static float heuristic(const Vec2& a, const Vec2& b) {
 
 
 optional<pair<short, short>> aStarNextStep(
-    const vector<pair<short, short>>& valid_positions, 
     short start_x, short start_y, short goal_x, short goal_y
 ) {
     priority_queue<Node*, vector<Node*>, CompareNode> open_list;
