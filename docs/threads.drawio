@@ -1,0 +1,19 @@
+<mxfile host="65bd71144e">
+    <diagram id="f0xkiPS--kcz9Yl76e6j" name="Page-1">
+        <mxGraphModel dx="1183" dy="817" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="6" value="AI thread" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="280" width="200" height="430" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="DB thread" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="280" width="200" height="430" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Worker threads" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="280" width="400" height="430" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
