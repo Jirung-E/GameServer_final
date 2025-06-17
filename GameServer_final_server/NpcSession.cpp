@@ -32,11 +32,20 @@ NpcSession::NpcSession(id_t id, int x, int y):
 	lua_pushnumber(lua, id);
 	lua_pcall(lua, 1, 0, 0);
 
-	lua_register(lua, "API_sendMessage", lua_sendMessage);
-	lua_register(lua, "API_move", lua_move);
-	lua_register(lua, "API_moveTo", lua_moveTo);
+	lua_getglobal(lua, "setSpawnPosition");
+	lua_pushnumber(lua, x);
+    lua_pushnumber(lua, y);
+    lua_pcall(lua, 2, 0, 0);
+
 	lua_register(lua, "API_getX", lua_getX);
 	lua_register(lua, "API_getY", lua_getY);
+	lua_register(lua, "API_move", lua_move);
+	lua_register(lua, "API_moveTo", lua_moveTo);
+    lua_register(lua, "API_attack", lua_attack);
+    lua_register(lua, "API_getHp", lua_getHp);
+    lua_register(lua, "API_reset", lua_reset);
+    lua_register(lua, "API_setPosition", lua_setPosition);
+	lua_register(lua, "API_sendMessage", lua_sendMessage);
 
 	*this->lua.borrow() = lua;
 }
@@ -46,6 +55,14 @@ NpcSession::~NpcSession() {
 	if(*lua) {
 		lua_close(*lua);
 	}
+}
+
+
+void NpcSession::revive() {
+	// revive를 호출하는데서 이미 lua를 borrow했음
+ //   auto lua = this->lua.borrow();
+	//lua_getglobal(*lua, "respawn");
+ //   lua_pcall(*lua, 0, 0, 0);
 }
 
 

@@ -33,6 +33,10 @@ namespace NpcAI {
     int lua_getY(lua_State* L);
     int lua_move(lua_State* L);
     int lua_moveTo(lua_State* L);
+    int lua_attack(lua_State* L);
+    int lua_getHp(lua_State* L);
+    int lua_reset(lua_State* L);
+    int lua_setPosition(lua_State* L);
     int lua_sendMessage(lua_State* L);
 
     void npcAiLoop(HANDLE h_iocp);

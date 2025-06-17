@@ -2,13 +2,28 @@ myid = 99999;
 
 target_id = nil;
 attack_time = 0;
-move_dir = {x = 0, y = 0};
 
+spawn_x = 0;
+spawn_y = 0;
 
 
 -- API functions
 function setUid(id)
     myid = id;
+end
+
+-- API functions
+function setSpawnPosition(x, y)
+    spawn_x = x;
+    spawn_y = y;
+end
+
+-- API functions
+function respawn()
+    API_setPosition(myid, spawn_x, spawn_y);
+    API_reset(my_id);
+    target_id = nil;
+    attack_time = 0;
 end
 
 
@@ -24,6 +39,7 @@ end
 
 
 function attack(p_id)
+    API_attack(my_id, p_id);
     API_sendMessage(myid, p_id, "ATTACK");
 end
 
@@ -55,8 +71,8 @@ function findTarget(x, y, near_players)
 
     for _, p_id in ipairs(near_players) do
         local distance_sq = distanceSqTo(x, y, p_id);
-        -- 감지거리: 3
-        if(distance_sq <= 9 and distance_sq < nearest_distance_sq) then
+        -- 감지거리: 5
+        if(distance_sq <= 25 and distance_sq < nearest_distance_sq) then
             target_id = p_id;
             nearest_distance_sq = distance_sq;
         end
@@ -72,8 +88,8 @@ function aiUpdate(x, y, near_players, time)
     -- 타겟이 아직 시야 안에 있는지 확인한다.
     if(target_id ~= nil) then
         local distance_sq = distanceSqTo(x, y, target_id);
-        -- 시야: 5
-        if(distance_sq > 25) then
+        -- 시야: 6
+        if(distance_sq > 36) then
             target_id = nil;
         end
     end
@@ -102,8 +118,15 @@ function aiUpdate(x, y, near_players, time)
         if(dist_x <= 1 and dist_y <= 1) then
             -- 타겟이 공격범위에 들어오면 이동하지 않음
         else 
-            API_moveTo(myid, target_x, target_y);
-            API_sendMessage(myid, target_id, "CHASE");
+            -- 타겟을 향해 이동
+            local distance_sq = (math.pow(dist_x, 2) + math.pow(dist_y, 2));
+            -- 시야: 6
+            if(distance_sq > 36) then
+                target_id = nil;
+            else
+                API_moveTo(myid, target_x, target_y);
+                API_sendMessage(myid, target_id, "CHASE");
+            end
         end
     end
 end
@@ -115,9 +138,20 @@ function event_playerMove(player_x, player_y, p_id, time)
         local x = API_getX(myid);
         local y = API_getY(myid);
         local distance_sq = distanceSqTo(x, y, p_id);
-        -- 감지거리: 3
-        if(distance_sq <= 9) then
+        -- 감지거리: 5
+        if(distance_sq <= 25) then
             target_id = p_id;
         end
+    end
+end
+
+-- API functions
+function event_playerAttack(p_id, time)
+    local hp = API_getHP(myid);
+    if(hp <= 0) then
+        respawn();
+        target_id = nil;
+    else
+        API_sendMessage(myid, p_id, "HIT");
     end
 end

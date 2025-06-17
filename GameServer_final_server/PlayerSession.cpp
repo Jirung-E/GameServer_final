@@ -19,6 +19,13 @@ PlayerSession::PlayerSession(id_t id, SOCKET socket):
 
 }
 
+void PlayerSession::revive() {
+    auto [x, y] = Server::map.getRandomSpawnPosition();
+    tpTo(x, y);
+	//movePostProcess();
+	character.hp = 10 + (character.level - 1) * 2; // 레벨당 2 증가
+}
+
 
 void PlayerSession::login() {
 	//x = rand() % MAP_WIDTH;
@@ -158,86 +165,101 @@ void PlayerSession::processPacket(Packet packet) {
             if(!Server::map.isValidPosition(x, y)) {
                 // 이동 불가능한 위치
                 // move_packet을 보내야 성능측정이 정상적으로 될거 같음
+                sendMovePacket(getId());
 				break;
             }
 
 			character.x = x;
 			character.y = y;
 
-			int curr_idx_x = x / SECTOR_SIZE;
-			int curr_idx_y = y / SECTOR_SIZE;
+			int curr_idx_x = character.x / SECTOR_SIZE;
+			int curr_idx_y = character.y / SECTOR_SIZE;
 			if(prev_idx_x != curr_idx_x || prev_idx_y != curr_idx_y) {
 				sectors[prev_idx_y][prev_idx_x].borrow()->erase(this);
 				sectors[curr_idx_y][curr_idx_x].borrow()->insert(this);
 			}
 
-			unordered_set<id_t> near_list;
-			auto client_vl = view_list.borrow();
-			unordered_set<id_t> old_vlist = *client_vl;
-			client_vl.release();
-
-			short min_x = (x - VIEW_RANGE) / SECTOR_SIZE;
-			short max_x = (x + VIEW_RANGE) / SECTOR_SIZE;
-			short min_y = (y - VIEW_RANGE) / SECTOR_SIZE;
-			short max_y = (y + VIEW_RANGE) / SECTOR_SIZE;
-			vector<Vault<unordered_set<Session*>>::Borrowed> near_sectors;
-			near_sectors.reserve(4);
-			for(short y = min_y; y <= max_y; ++y) {
-				for(short x = min_x; x <= max_x; ++x) {
-					if(x < 0 || y < 0 || x >= NUM_SECTOR_X || y >= NUM_SECTOR_Y) continue;
-					// 미리 다 lock해놔야함
-					near_sectors.push_back(sectors[y][x].borrow());
-				}
-			}
-			for(auto& sector : near_sectors) {
-				for(const auto& p : *sector) {
-					if(p == nullptr || p->state != SessionState::InGame) continue;
-					if(p->getId() == getId()) continue; // 자기 자신은 제외
-					if(character.canSee(p->character)) {
-						near_list.insert(p->getId());
-					}
-				}
-			}
-
-			sendMovePacket(getId());
-
-			for(auto& pl : near_list) {
-				shared_ptr<Session> cpl = Session::sessions.at(pl);
-				if(cpl->isPc()) {
-					auto pc = reinterpret_cast<PlayerSession*>(cpl.get());
-					auto cpl_vl = pc->view_list.borrow();
-					if(cpl_vl->count(getId())) {
-						cpl_vl.release();
-						pc->sendMovePacket(getId());
-					}
-					else {
-						cpl_vl.release();
-						pc->sendAddPlayerPacket(getId());
-					}
-				}
-				else {
-					auto npc = reinterpret_cast<NpcSession*>(cpl.get());
-					npc->wakeup();
-					npc->event_characterMove(getId());
-				}
-
-				if(old_vlist.count(pl) == 0) {
-					sendAddPlayerPacket(pl);
-				}
-			}
-
-			for(auto& pl : old_vlist) {
-				if(0 == near_list.count(pl)) {
-					sendRemovePlayerPacket(pl);
-					shared_ptr<Session> cl = Session::sessions.at(pl);
-					if(cl->isPc()) {
-						auto pc = reinterpret_cast<PlayerSession*>(cl.get());
-						pc->sendRemovePlayerPacket(getId());
-					}
-				}
-			}
+            movePostProcess();
 
 			break;
+		}
+		case C2S_P_TELEPORT: {
+            //cs_packet_teleport* p = reinterpret_cast<cs_packet_teleport*>(&packet);
+            short prev_idx_x = character.x / SECTOR_SIZE;
+            short prev_idx_y = character.y / SECTOR_SIZE;
+            auto [x, y] = Server::map.getRandomEmptyPosition();
+            tpTo(x, y);
+            movePostProcess();
+            break;
+        }
+	}
+}
+
+
+void PlayerSession::movePostProcess() {
+	unordered_set<id_t> near_list;
+	auto client_vl = view_list.borrow();
+	unordered_set<id_t> old_vlist = *client_vl;
+	client_vl.release();
+
+	short min_x = (character.x - VIEW_RANGE) / SECTOR_SIZE;
+	short max_x = (character.x + VIEW_RANGE) / SECTOR_SIZE;
+	short min_y = (character.y - VIEW_RANGE) / SECTOR_SIZE;
+	short max_y = (character.y + VIEW_RANGE) / SECTOR_SIZE;
+	vector<Vault<unordered_set<Session*>>::Borrowed> near_sectors;
+	near_sectors.reserve(4);
+	for(short y = min_y; y <= max_y; ++y) {
+		for(short x = min_x; x <= max_x; ++x) {
+			if(x < 0 || y < 0 || x >= NUM_SECTOR_X || y >= NUM_SECTOR_Y) continue;
+			// 미리 다 lock해놔야함
+			near_sectors.push_back(sectors[y][x].borrow());
+		}
+	}
+	for(auto& sector : near_sectors) {
+		for(const auto& p : *sector) {
+			if(p == nullptr || p->state != SessionState::InGame) continue;
+			if(p->getId() == getId()) continue; // 자기 자신은 제외
+			if(character.canSee(p->character)) {
+				near_list.insert(p->getId());
+			}
+		}
+	}
+
+	sendMovePacket(getId());
+
+	for(auto& pl : near_list) {
+		shared_ptr<Session> cpl = Session::sessions.at(pl);
+		if(cpl->isPc()) {
+			auto pc = reinterpret_cast<PlayerSession*>(cpl.get());
+			auto cpl_vl = pc->view_list.borrow();
+			if(cpl_vl->count(getId())) {
+				cpl_vl.release();
+				pc->sendMovePacket(getId());
+			}
+			else {
+				cpl_vl.release();
+				pc->sendAddPlayerPacket(getId());
+			}
+		}
+		else {
+			auto npc = reinterpret_cast<NpcSession*>(cpl.get());
+			npc->wakeup();
+			npc->event_characterMove(getId());
+		}
+
+		if(old_vlist.count(pl) == 0) {
+			sendAddPlayerPacket(pl);
+		}
+	}
+
+	for(auto& pl : old_vlist) {
+		if(0 == near_list.count(pl)) {
+			sendRemovePlayerPacket(pl);
+			shared_ptr<Session> cl = Session::sessions.at(pl);
+			if(cl->isPc()) {
+				auto pc = reinterpret_cast<PlayerSession*>(cl.get());
+				pc->sendRemovePlayerPacket(getId());
+			}
 		}
 	}
 }

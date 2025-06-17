@@ -20,7 +20,7 @@ using namespace chrono;
 extern HWND		hWnd;
 extern string server_ip;
 
-const static int MAX_TEST = 20000;
+const static int MAX_TEST = 10000;
 const static int MAX_CLIENTS = MAX_TEST * 2; 
 const static int INVALID_ID = -1;
 const static int MAX_PACKET_SIZE = 255;
@@ -161,10 +161,10 @@ void ProcessPacket(int ci, unsigned char packet[])
 		g_clients[my_id].x = login_packet->x;
 		g_clients[my_id].y = login_packet->y;
 
-		//cs_packet_teleport t_packet;
-		//t_packet.size = sizeof(t_packet);
-		//t_packet.type = CS_TELEPORT;
-		//SendPacket(my_id, &t_packet);
+		cs_packet_teleport t_packet;
+		t_packet.size = sizeof(t_packet);
+        t_packet.type = C2S_P_TELEPORT;
+		SendPacket(my_id, &t_packet);
 		
 		break;
 	}

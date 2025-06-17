@@ -1,12 +1,11 @@
-# png 맵 파일을 서버에서 사용할 수 있도록 변환하는 스크립트
+# 컬러를 반영해서 변환
 import os
 import sys
 from PIL import Image
 
+
 def convert_map(input_path, output_path):
-    bit_buffer = 0
-    bit_count = 0
-    byte_content = bytearray()
+    map_contents = []
 
     with Image.open(input_path) as img:
         img = img.convert("RGBA")   # png
@@ -14,30 +13,28 @@ def convert_map(input_path, output_path):
         pixels = img.load()
 
         for y in range(height):
+            content = ""    # 줄별로 문자열로 저장
+            
             for x in range(width):
                 r, g, b, a = pixels[x, y]
                 if r == 0 and g == 0 and b == 0:
-                    # 검은색이면 0
-                    bit = 0
+                    content += '#'   # 돌
+                elif r == 255 and g == 255 and b == 255:
+                    content += ' '   # 빈 공간
+                elif r == 0 and g == 0 and b == 255:
+                    content += 'W'   # Water
+                elif r == 0 and g == 255 and b == 0:
+                    content += 'S'   # Spawn
                 else:
-                    # 아니면 1
-                    bit = 1
-                bit_buffer = (bit_buffer << 1) | bit
-                bit_count += 1
+                    content += '#'   # 돌로 취급
 
-                if bit_count == 8:
-                    byte_content.append(bit_buffer)
-                    bit_buffer = 0
-                    bit_count = 0
+            map_contents.append(content)
 
-        # 마지막 남은 비트 처리 (빈 비트는 오른쪽에 0으로 채움)
-        if bit_count > 0:
-            bit_buffer <<= (8 - bit_count)
-            byte_content.append(bit_buffer)
+    with open(output_path, 'w') as f:
+        for line in map_contents:
+            print(''.join(line))  # 줄별로 출력
+            f.write(''.join(line) + '\n')
 
-    with open(output_path, 'wb') as f:
-        f.write(byte_content)
-        
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -49,7 +46,7 @@ if __name__ == "__main__":
 
     # 파일 이름에서 확장자 제거
     file_name = os.path.splitext(file_name)[0]
-    output_map_path = os.path.join(os.path.dirname(input_map_path), f"{file_name}.map")
+    output_map_path = os.path.join(os.path.dirname(input_map_path), f"{file_name}.mapcontents")
 
     convert_map(input_map_path, output_map_path)
 

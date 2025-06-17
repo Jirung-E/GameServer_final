@@ -20,12 +20,16 @@ public:
 public:
 	virtual bool isNpc() const override { return false; }
 
+	virtual void revive() override;
+
 	void setSocket(SOCKET s) { socket = s; }
 	SOCKET getSocket() const { return socket; }
 
 	void login();
 
 	void processPacket(Packet packet);
+
+    void movePostProcess();
 
 	void doRecv();
 	void doSend(void* packet) const;

@@ -16,6 +16,8 @@ public:
 public:
 	virtual bool isNpc() const override { return true; }
 
+	virtual void revive() override;
+
 	void wakeup();
 	void runAI();
 	void event_characterMove(id_t character_id);

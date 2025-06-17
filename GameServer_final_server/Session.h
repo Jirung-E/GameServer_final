@@ -42,6 +42,10 @@ public:
 public:
 	id_t getId() const { return id; }
 
+	virtual void tpTo(short x, short y);
+	void damage(short amount);
+	virtual void revive() abstract;
+
 	virtual bool isNpc() const abstract;
 	virtual bool isPc() const { return !isNpc(); }
 };
